@@ -3,33 +3,34 @@ import { Globe2, Handshake, TrendingUp } from 'lucide-react';
 import logo from "./assets/logouinar.png";
 import bendera from "./assets/indonesia.png";
 import "./styles/index.css"
+import { MouList } from "./components/MouList";
 
 function App() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [data, setData] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/api/frontend/kemitraan/getdata");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch("/api/api/frontend/kemitraan/getdata");
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+  //       const result = await response.json();
+  //       setData(result);
+  //     } catch (error) {
+  //       setError(error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
 
   return (
     <>
@@ -91,7 +92,7 @@ function App() {
               </h2>
             </div>
 
-            {/* <MouList /> */}
+            <MouList/>
           </div>
         </section>
 
@@ -99,7 +100,7 @@ function App() {
         <footer className="bg-muted/50 border-t mt-20">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center text-sm text-muted-foreground">
-              <p>© 2026 UIN Ar-Raniry. Semua hak cipta dilindungi.</p>
+              <p>© 2026 Kerjasama - UIN Ar-Raniry</p>
             </div>
           </div>
         </footer>
