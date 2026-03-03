@@ -1,19 +1,28 @@
-import { Search, Filter } from 'lucide-react';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Badge } from './ui/badge';
+import { Search, Filter } from "lucide-react";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Badge } from "./ui/badge";
 
 interface MouFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedStatus: string;
   onStatusChange: (value: string) => void;
-  selectedCountry: string;
-  onCountryChange: (value: string) => void;
-  selectedType: string;
-  onTypeChange: (value: string) => void;
-  countries: string[];
-  types: string[];
+  selectedPartnerType: string;
+  onPartnerTypeChange: (value: string) => void;
+  selectedMitraAsal: string;
+  onMitraAsalChange: (value: string) => void;
+  selectedTahun: string;
+  onTahunChange: (value: string) => void;
+  partnerTypes: string[];
+  mitraAsal: string[];
+  tahun: string[];
   totalResults: number;
 }
 
@@ -22,15 +31,23 @@ export function MouFilters({
   onSearchChange,
   selectedStatus,
   onStatusChange,
-  selectedCountry,
-  onCountryChange,
-  selectedType,
-  onTypeChange,
-  countries,
-  types,
+  selectedPartnerType,
+  onPartnerTypeChange,
+  selectedMitraAsal,
+  onMitraAsalChange,
+  selectedTahun,
+  onTahunChange,
+  partnerTypes,
+  mitraAsal,
+  tahun,
   totalResults,
 }: MouFiltersProps) {
-  const activeFiltersCount = [selectedStatus, selectedCountry, selectedType].filter(f => f !== 'all').length;
+  const activeFiltersCount = [
+    selectedStatus,
+    selectedPartnerType,
+    selectedMitraAsal,
+    selectedTahun,
+  ].filter((f) => f !== "all").length;
 
   return (
     <div className="space-y-4">
@@ -59,37 +76,52 @@ export function MouFilters({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="all">Semua</SelectItem>
             <SelectItem value="aktif">Aktif</SelectItem>
             <SelectItem value="berakhir">Berakhir</SelectItem>
           </SelectContent>
         </Select>
 
-        {/* Country Filter */}
-        <Select value={selectedCountry} onValueChange={onCountryChange}>
+        {/* PartnerType Filter */}
+        <Select value={selectedPartnerType} onValueChange={onPartnerTypeChange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Negara" />
+            <SelectValue placeholder="Jenis Mitra" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Negara</SelectItem>
-            {countries.map((country) => (
-              <SelectItem key={country} value={country}>
-                {country}
+            <SelectItem value="all">Semua Mitra</SelectItem>
+            {partnerTypes.map((partnerType) => (
+              <SelectItem key={partnerType} value={partnerType}>
+                {partnerType}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         {/* Type Filter */}
-        <Select value={selectedType} onValueChange={onTypeChange}>
+        <Select value={selectedMitraAsal} onValueChange={onMitraAsalChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Jenis Kerjasama" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Jenis</SelectItem>
-            {types.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
+            {mitraAsal.map((asal) => (
+              <SelectItem key={asal} value={asal}>
+                {asal}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Year Filter */}
+        <Select value={selectedTahun} onValueChange={onTahunChange}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Tahun" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Tahun</SelectItem>
+            {tahun.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
               </SelectItem>
             ))}
           </SelectContent>
@@ -99,7 +131,9 @@ export function MouFilters({
       {/* Results Count */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>
-          Menampilkan <span className="font-semibold text-foreground">{totalResults}</span> hasil
+          Menampilkan{" "}
+          <span className="font-semibold text-foreground">{totalResults}</span>{" "}
+          hasil
         </span>
         {activeFiltersCount > 0 && (
           <Badge variant="secondary" className="ml-2">

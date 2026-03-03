@@ -1,10 +1,17 @@
-import { useEffect, useState } from 'react';
-import { MouFilters } from './MouFilters';
-import { MouDetailModal } from './MouDetailModal';
-import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { useEffect, useState } from "react";
+import { MouFilters } from "./MouFilters";
+import { MouDetailModal } from "./MouDetailModal";
+import {
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+} from "lucide-react";
+import * as XLSX from "xlsx";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import {
   Table,
   TableBody,
@@ -12,7 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
+} from "./ui/table";
 
 interface daftarJenisMoU {
   label: string;
@@ -72,11 +79,12 @@ export function MouList() {
   const [isUsingMockData, setIsUsingMockData] = useState(false);
   const [selectedMou, setSelectedMou] = useState<MouData | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(6);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedCountry, setSelectedCountry] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
+  const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedPartnerType, setSelectedPartnerType] = useState("all");
+  const [selectedMitraAsal, setSelectedMitraAsal] = useState("all");
+  const [selectedTahun, setSelectedTahun] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -84,26 +92,25 @@ export function MouList() {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await fetch('/api/api/frontend/kemitraan/getdata');
-        
+
+        const response = await fetch("/api/api/frontend/kemitraan/getdata");
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result: ApiResponse = await response.json();
-        console.log('API Response:', result);
+        console.log("API Response:", result);
 
         if (result && Array.isArray(result.content)) {
           setMouData(result.content);
           setIsUsingMockData(false);
         } else {
-          throw new Error('Data tidak tersedia dalam format yang diharapkan');
+          throw new Error("Data tidak tersedia dalam format yang diharapkan");
         }
       } catch (err) {
         // Silently fall back to mock data when API is not accessible
         setIsUsingMockData(true);
-        
       } finally {
         setLoading(false);
       }
@@ -113,22 +120,104 @@ export function MouList() {
   }, []);
 
   // Get unique countries and types for filters
-  const countries = Array.from(new Set(mouData.map(mou => mou.mitra_asal).filter(Boolean))) as string[];
-  const types = Array.from(new Set(mouData.map(mou => mou.jenis_mou).filter(Boolean))) as string[];
+  const partnerTypes = Array.from(
+    new Set(mouData.map((mou) => mou.mitra_lembaga).filter(Boolean)),
+  ) as string[];
+  const mitraAsal = Array.from(
+    new Set(mouData.map((mou) => mou.jenis_mou).filter(Boolean)),
+  ) as string[];
+  const tahun = Array.from(
+    new Set(
+      mouData
+        .map((mou) => {
+          if (!mou.tanggal_mulai) return null;
+          const date = new Date(mou.tanggal_mulai);
+          return date.getFullYear().toString();
+        })
+        .filter(Boolean),
+    ),
+  ) as string[];
+
+  const renderMitraAsal = (mitraAsal: string) => {
+    if (!mitraAsal) return "N/A";
+
+    const asalLower = mitraAsal.toLowerCase();
+    if (asalLower.includes("dalamnegeri")) {
+      return "Dalam Negeri";
+    } else if (asalLower.includes("luarnegeri")) {
+      return "Luar Negeri";
+    }
+  };
+
+  const renderTahun = (tanggalMulai: string) => {
+    if (!tanggalMulai) return "N/A";
+    const date = new Date(tanggalMulai);
+    return date.getFullYear();
+  };
+
+  // helper to derive a human-friendly MoU status based on dates
+  const renderStatus = (tanggalMulai: string, tanggalBerakhir: string) => {
+    if (!tanggalMulai || !tanggalBerakhir) return "N/A";
+
+    const startDate = new Date(tanggalMulai);
+    const endDate = new Date(tanggalBerakhir);
+    const today = new Date();
+
+    if (today < startDate) {
+      return "Belum Dimulai";
+    } else if (today > endDate) {
+      return "Berakhir";
+    } else {
+      return "Aktif";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    const statusLower = status?.toLowerCase() || "";
+    if (statusLower.includes("aktif") || statusLower.includes("active")) {
+      return "text-green-800 border-green-200";
+    } else if (
+      statusLower.includes("berakhir") ||
+      statusLower.includes("expired")
+    ) {
+      return "text-red-800 border-red-200";
+    }
+    return "text-yellow-800 border-yellow-200";
+  };
 
   // Filter data
   const filteredData = mouData.filter((mou) => {
-    const matchesSearch = 
+    const matchesSearch =
       mou.mitra_nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       mou.nomor_dokumen?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       mou.jenis_mou?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = selectedStatus === 'all' || mou.status_dokumen?.toLowerCase().includes(selectedStatus.toLowerCase());
-    // const matchesCountry = selectedCountry === 'all' || mou.negara === selectedCountry;
-    // const matchesType = selectedType === 'all' || mou.jenis_kerjasama === selectedType;
 
-    // return matchesSearch && matchesStatus && matchesCountry && matchesType;
-    return matchesSearch && matchesStatus;
+    const computedStatus = renderStatus(
+      mou.tanggal_mulai,
+      mou.tanggal_berakhir,
+    );
+    const matchesStatus =
+      selectedStatus === "all" ||
+      computedStatus.toLowerCase().includes(selectedStatus.toLowerCase());
+    const matchesPartnerType =
+      selectedPartnerType === "all" ||
+      mou.mitra_lembaga === selectedPartnerType;
+    const computedMitraAsal = renderMitraAsal(
+      mou.mitra_asal?.toLowerCase() || "",
+    );
+    const matchesMitraAsal =
+      selectedMitraAsal === "all" || computedMitraAsal === selectedMitraAsal;
+    const matchesTahun =
+      selectedTahun === "all" ||
+      renderTahun(mou.tanggal_mulai) === renderTahun(selectedTahun);
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPartnerType &&
+      matchesMitraAsal &&
+      matchesTahun
+    );
   });
 
   // Pagination
@@ -140,7 +229,7 @@ export function MouList() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedStatus, selectedCountry, selectedType]);
+  }, [searchTerm, selectedStatus, selectedPartnerType, selectedMitraAsal]);
 
   const handleViewDetails = (mou: MouData) => {
     setSelectedMou(mou);
@@ -148,23 +237,32 @@ export function MouList() {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  const getStatusColor = (status: string) => {
-    const statusLower = status?.toLowerCase() || '';
-    if (statusLower.includes('aktif') || statusLower.includes('active')) {
-      return 'bg-green-100 text-green-800 border-green-200';
-    } else if (statusLower.includes('berakhir') || statusLower.includes('expired')) {
-      return 'bg-red-100 text-red-800 border-red-200';
-    }
-    return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  // export current filtered results using the xlsx library
+  const exportToXls = () => {
+    const data = filteredData.map((mou, idx) => ({
+      No: idx + 1,
+      Mitra: mou.mitra_nama || "",
+      "Jenis Mitra": mou.mitra_lembaga || "",
+      "Bidang Kerjasama": mou.bidang_kerjasama?.slice(1, -1) || "",
+      "Nomor MoU": mou.nomor_dokumen || "",
+      "Tanggal Mulai": formatDate(mou.tanggal_mulai),
+      "Tanggal Berakhir": formatDate(mou.tanggal_berakhir),
+      Status: renderStatus(mou.tanggal_mulai, mou.tanggal_berakhir),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "MoU");
+    XLSX.writeFile(wb, "mou_export.xlsx");
   };
 
   if (loading) {
@@ -188,7 +286,9 @@ export function MouList() {
   if (mouData.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted-foreground text-lg">Tidak ada data kemitraan yang tersedia</p>
+        <p className="text-muted-foreground text-lg">
+          Tidak ada data kemitraan yang tersedia
+        </p>
       </div>
     );
   }
@@ -200,25 +300,36 @@ export function MouList() {
           <AlertCircle className="size-4" />
           <AlertTitle>Demo Mode</AlertTitle>
           <AlertDescription>
-            Tidak dapat mengakses API (kemungkinan masalah CORS). Menampilkan data contoh untuk demonstrasi.
+            Tidak dapat mengakses API (kemungkinan masalah CORS). Menampilkan
+            data contoh untuk demonstrasi.
           </AlertDescription>
         </Alert>
       )}
-      
+
       {/* Filters */}
       <MouFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
-        selectedCountry={selectedCountry}
-        onCountryChange={setSelectedCountry}
-        selectedType={selectedType}
-        onTypeChange={setSelectedType}
-        countries={countries}
-        types={types}
+        selectedPartnerType={selectedPartnerType}
+        onPartnerTypeChange={setSelectedPartnerType}
+        selectedMitraAsal={selectedMitraAsal}
+        onMitraAsalChange={setSelectedMitraAsal}
+        selectedTahun={selectedTahun}
+        onTahunChange={setSelectedTahun}
+        partnerTypes={partnerTypes}
+        mitraAsal={mitraAsal}
+        tahun={tahun}
         totalResults={filteredData.length}
       />
+
+      {/* export button, below filters */}
+      <div className="mt-4">
+        <Button size="sm" onClick={exportToXls}>
+          Export ke XLSX
+        </Button>
+      </div>
 
       {/* No Results */}
       {filteredData.length === 0 && (
@@ -228,7 +339,7 @@ export function MouList() {
           </p>
         </div>
       )}
-      
+
       {/* MoU Table */}
       {currentData.length > 0 && (
         <>
@@ -238,14 +349,21 @@ export function MouList() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[50px]">No</TableHead>
-                    <TableHead className="min-w-[250px]">Institusi</TableHead>
-                    <TableHead className="min-w-[150px]">Jenis Lembaga</TableHead>
-                    <TableHead className="min-w-[180px]">Jenis Kerjasama</TableHead>
+                    <TableHead className="min-w-[250px]">Mitra</TableHead>
+                    <TableHead className="min-w-[150px]">Jenis Mitra</TableHead>
+                    <TableHead className="min-w-[180px]">
+                      Bidang Kerjasama
+                    </TableHead>
                     <TableHead className="min-w-[150px]">Nomor MoU</TableHead>
-                    <TableHead className="min-w-[130px]">Tanggal Mulai</TableHead>
-                    <TableHead className="min-w-[130px]">Tanggal Berakhir</TableHead>
-                    <TableHead className="min-w-[100px]">Status</TableHead>
-                    <TableHead className="w-[100px] text-center">Aksi</TableHead>
+                    <TableHead className="min-w-[130px]">
+                      Tanggal Mulai
+                    </TableHead>
+                    <TableHead className="min-w-[130px]">
+                      Tanggal Berakhir
+                    </TableHead>
+                    <TableHead className="w-[100px] text-center">
+                      Aksi
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -257,16 +375,30 @@ export function MouList() {
                       <TableCell>
                         <div>
                           <div className="font-medium">{mou.mitra_nama}</div>
-                          {mou.mitra_asal && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {mou.mitra_asal}
+                          <div className="text-sm text-muted-foreground">
+                            <div
+                              className={getStatusColor(
+                                renderStatus(
+                                  mou.tanggal_mulai,
+                                  mou.tanggal_berakhir,
+                                ),
+                              )}
+                            >
+                              {renderStatus(
+                                mou.tanggal_mulai,
+                                mou.tanggal_berakhir,
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>{mou.mitra_lembaga || '-'}</TableCell>
-                      <TableCell>{mou.jenis_mou}</TableCell>
-                      <TableCell className="font-mono text-sm">{mou.nomor_dokumen}</TableCell>
+                      <TableCell>{mou.mitra_lembaga || "-"}</TableCell>
+                      <TableCell>
+                        {mou.bidang_kerjasama?.slice(1, -1)}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {mou.nomor_dokumen}
+                      </TableCell>
                       <TableCell>{formatDate(mou.tanggal_mulai)}</TableCell>
                       <TableCell>{formatDate(mou.tanggal_berakhir)}</TableCell>
                       {/* <TableCell>
@@ -296,7 +428,7 @@ export function MouList() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="size-4" />
@@ -304,35 +436,46 @@ export function MouList() {
               </Button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className="min-w-[40px]"
-                      >
-                        {page}
-                      </Button>
-                    );
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} className="px-2">...</span>;
-                  }
-                  return null;
-                })}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="min-w-[40px]"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="px-2">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  },
+                )}
               </div>
 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Selanjutnya

@@ -55,7 +55,7 @@ function App() {
                   <div className="flex items-center justify-center mb-3">
                     <Handshake className="size-6 text-primary" />
                   </div>
-                  <div className="text-3xl mb-2">136</div>
+                  <div className="text-3xl mb-2">128</div>
                   <div className="text-sm text-muted-foreground">
                     Kerjasama Aktif
                   </div>
@@ -65,7 +65,7 @@ function App() {
                   <div className="flex items-center justify-center mb-3">
                     <img src={bendera} alt="Indonesia" className="h-6 w-auto text-primary" />
                   </div>
-                  <div className="text-3xl mb-2">104</div>
+                  <div className="text-3xl mb-2">98</div>
                   <div className="text-sm text-muted-foreground">MoU Aktif Nasional</div>
                 </div>
 
@@ -73,7 +73,7 @@ function App() {
                   <div className="flex items-center justify-center mb-3">
                     <Globe2 className="size-6 text-primary" />
                   </div>
-                  <div className="text-3xl mb-2">32</div>
+                  <div className="text-3xl mb-2">30</div>
                   <div className="text-sm text-muted-foreground">
                     MoU Aktif Internasional
                   </div>
