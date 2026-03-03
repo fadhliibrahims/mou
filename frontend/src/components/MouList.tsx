@@ -82,9 +82,9 @@ export function MouList() {
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedPartnerType, setSelectedPartnerType] = useState("all");
+  const [selectedPartnerType, setSelectedPartnerType] = useState<string[]>([]);
   const [selectedMitraAsal, setSelectedMitraAsal] = useState("all");
-  const [selectedTahun, setSelectedTahun] = useState("all");
+  const [selectedTahun, setSelectedTahun] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -138,6 +138,14 @@ export function MouList() {
     ),
   ) as string[];
 
+  const handleClearAll = () => {
+    setSearchTerm("");
+    setSelectedStatus("all");
+    setSelectedPartnerType([]);
+    setSelectedMitraAsal("all");
+    setSelectedTahun([]);
+  };
+
   const renderMitraAsal = (mitraAsal: string) => {
     if (!mitraAsal) return "N/A";
 
@@ -190,26 +198,30 @@ export function MouList() {
     const matchesSearch =
       mou.mitra_nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       mou.nomor_dokumen?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mou.jenis_mou?.toLowerCase().includes(searchTerm.toLowerCase());
+      mou.jenis_mou?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mou.bidang_kerjasama?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const computedStatus = renderStatus(
       mou.tanggal_mulai,
       mou.tanggal_berakhir,
     );
     const matchesStatus =
-      selectedStatus === "all" ||
-      computedStatus.toLowerCase().includes(selectedStatus.toLowerCase());
+      selectedStatus === "all" || computedStatus.toLowerCase() === selectedStatus.toLowerCase();
     const matchesPartnerType =
-      selectedPartnerType === "all" ||
-      mou.mitra_lembaga === selectedPartnerType;
+      selectedPartnerType.length === 0 ||
+      selectedPartnerType.some((partnerType) =>
+        mou.mitra_lembaga?.includes(partnerType),
+      );
     const computedMitraAsal = renderMitraAsal(
       mou.mitra_asal?.toLowerCase() || "",
     );
     const matchesMitraAsal =
       selectedMitraAsal === "all" || computedMitraAsal === selectedMitraAsal;
     const matchesTahun =
-      selectedTahun === "all" ||
-      renderTahun(mou.tanggal_mulai) === renderTahun(selectedTahun);
+      selectedTahun.length === 0 ||
+      selectedTahun.some(
+        (t) => renderTahun(mou.tanggal_mulai) === renderTahun(t),
+      );
 
     return (
       matchesSearch &&
@@ -322,12 +334,13 @@ export function MouList() {
         mitraAsal={mitraAsal}
         tahun={tahun}
         totalResults={filteredData.length}
+        onClearAll={handleClearAll}
       />
 
       {/* export button, below filters */}
       <div className="mt-4">
         <Button size="sm" onClick={exportToXls}>
-          Export ke XLSX
+          Export ke Excel (xlsx)
         </Button>
       </div>
 
@@ -361,9 +374,9 @@ export function MouList() {
                     <TableHead className="min-w-[130px]">
                       Tanggal Berakhir
                     </TableHead>
-                    <TableHead className="w-[100px] text-center">
+                    {/* <TableHead className="w-[100px] text-center">
                       Aksi
-                    </TableHead>
+                    </TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -406,7 +419,7 @@ export function MouList() {
                           {mou.status_dokumen}
                         </Badge>
                       </TableCell> */}
-                      <TableCell className="text-center">
+                      {/* <TableCell className="text-center">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -414,7 +427,7 @@ export function MouList() {
                         >
                           <Eye className="size-4" />
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
