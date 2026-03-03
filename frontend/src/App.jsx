@@ -100,7 +100,7 @@ function App() {
         <footer className="bg-muted/50 border-t mt-20">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center text-sm text-muted-foreground">
-              <p>© 2026 Kerjasama - UIN Ar-Raniry</p>
+              <p>© 2026 Subtim Kerjasama dan Kelembagaan - UIN Ar-Raniry Banda Aceh</p>
             </div>
           </div>
         </footer>

@@ -1,4 +1,4 @@
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { Input } from "./ui/input";
 import {
   Select,
@@ -8,22 +8,25 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Badge } from "./ui/badge";
+import { MultiSelect } from "./ui/multi-select";
+import { Button } from "./ui/button";
 
 interface MouFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedStatus: string;
   onStatusChange: (value: string) => void;
-  selectedPartnerType: string;
-  onPartnerTypeChange: (value: string) => void;
+  selectedPartnerType: string[];
+  onPartnerTypeChange: (value: string[]) => void;
   selectedMitraAsal: string;
   onMitraAsalChange: (value: string) => void;
-  selectedTahun: string;
-  onTahunChange: (value: string) => void;
+  selectedTahun: string[];
+  onTahunChange: (value: string[]) => void;
   partnerTypes: string[];
   mitraAsal: string[];
   tahun: string[];
   totalResults: number;
+  onClearAll: () => void;
 }
 
 export function MouFilters({
@@ -41,13 +44,14 @@ export function MouFilters({
   mitraAsal,
   tahun,
   totalResults,
+  onClearAll,
 }: MouFiltersProps) {
-  const activeFiltersCount = [
-    selectedStatus,
-    selectedPartnerType,
-    selectedMitraAsal,
-    selectedTahun,
-  ].filter((f) => f !== "all").length;
+  const activeFiltersCount =
+    selectedPartnerType.length +
+    [selectedStatus, selectedMitraAsal].filter((f) => f !== "all").length +
+    selectedTahun.length;
+
+  const hasActiveFilters = activeFiltersCount > 0 || searchTerm.length > 0;
 
   return (
     <div className="space-y-4">
@@ -56,7 +60,7 @@ export function MouFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Cari institusi, nomor MoU, atau jenis kerjasama..."
+          placeholder="Cari nama mitra, jenis mitra, bidang kerjasama atau nomor MoU..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
@@ -82,8 +86,16 @@ export function MouFilters({
           </SelectContent>
         </Select>
 
+        {/* <MultiSelect
+          options={["Aktif", "Berakhir"]}
+          value={selectedStatus}
+          onChange={onStatusChange}
+          placeholder="Status"
+          className="w-auto"
+        /> */}
+
         {/* PartnerType Filter */}
-        <Select value={selectedPartnerType} onValueChange={onPartnerTypeChange}>
+        {/* <Select value={selectedPartnerType} onValueChange={onPartnerTypeChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Jenis Mitra" />
           </SelectTrigger>
@@ -95,7 +107,15 @@ export function MouFilters({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
+        </Select> */}
+
+        <MultiSelect
+          options={partnerTypes}
+          value={selectedPartnerType}
+          onChange={onPartnerTypeChange}
+          placeholder="Jenis Mitra"
+          className="w-[200px]"
+        />
 
         {/* Type Filter */}
         <Select value={selectedMitraAsal} onValueChange={onMitraAsalChange}>
@@ -103,7 +123,7 @@ export function MouFilters({
             <SelectValue placeholder="Jenis Kerjasama" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Jenis</SelectItem>
+            <SelectItem value="all">Semua Wilayah</SelectItem>
             {mitraAsal.map((asal) => (
               <SelectItem key={asal} value={asal}>
                 {asal}
@@ -112,8 +132,16 @@ export function MouFilters({
           </SelectContent>
         </Select>
 
+        <MultiSelect
+          options={tahun}
+          value={selectedTahun}
+          onChange={onTahunChange}
+          placeholder="Tahun"
+          className="w-[200px]"
+        />
+
         {/* Year Filter */}
-        <Select value={selectedTahun} onValueChange={onTahunChange}>
+        {/* <Select value={selectedTahun} onValueChange={onTahunChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Tahun" />
           </SelectTrigger>
@@ -125,8 +153,83 @@ export function MouFilters({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
+        </Select>*/}
+
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearAll}
+            className="text-muted-foreground hover:text-foreground gap-1.5"
+          >
+            <X className="size-3.5" />
+            Hapus Semua Filter
+          </Button>
+        )}
       </div>
+
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {/* {selectedStatus.map((s) => (
+            <Badge
+              key={`status-${s}`}
+              variant="secondary"
+              className="gap-1 pr-1"
+            >
+              <span className="text-xs text-muted-foreground">Status:</span>
+              {s}
+              <button
+                onClick={() =>
+                  onStatusChange(selectedStatus.filter((s) => s !== s))
+                }
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))} */}
+          {selectedPartnerType.map((partnerType) => (
+            <Badge
+              key={`partnerType-${partnerType}`}
+              variant="secondary"
+              className="gap-1 pr-1"
+            >
+              <span className="text-xs text-muted-foreground">Jenis Mitra:</span>
+              {partnerType}
+              <button
+                onClick={() =>
+                  onPartnerTypeChange(
+                    selectedPartnerType.filter(
+                      (pt) => pt !== partnerType,
+                    ),
+                  )
+                }
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+          {selectedTahun.map((thn) => (
+            <Badge
+              key={`tahun-${thn}`}
+              variant="secondary"
+              className="gap-1 pr-1"
+            >
+              <span className="text-xs text-muted-foreground">Tahun:</span>
+              {thn}
+              <button
+                onClick={() =>
+                  onTahunChange(selectedTahun.filter((t) => t !== thn))
+                }
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {/* Results Count */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
