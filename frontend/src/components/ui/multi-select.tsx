@@ -1,15 +1,11 @@
-import { useState } from 'react';
-import { Check, ChevronDown, X } from 'lucide-react';
-import { cn } from './utils';
-import { buttonVariants } from './button';
-import { Badge } from './badge';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './popover';
-import { Checkbox } from './checkbox';
-import { ScrollArea } from './scroll-area';
+import { useState } from "react";
+import { Check, ChevronDown, X } from "lucide-react";
+import { cn } from "./utils";
+import { buttonVariants } from "./button";
+import { Badge } from "./badge";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { Checkbox } from "./checkbox";
+import { ScrollArea } from "./scroll-area";
 
 interface MultiSelectProps {
   options: string[];
@@ -24,7 +20,7 @@ export function MultiSelect({
   options,
   value,
   onChange,
-  placeholder = 'Pilih...',
+  placeholder = "Pilih...",
   className,
   maxDisplayed = 2,
 }: MultiSelectProps) {
@@ -64,19 +60,15 @@ export function MultiSelect({
       );
     }
 
-    return (
-      <span className="text-sm">
-        {value.length} dipilih
-      </span>
-    );
+    return <span className="text-sm">{value.length} dipilih</span>;
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         className={cn(
-                "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-                className
+          "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          className,
         )}
         aria-expanded={open}
       >
@@ -89,7 +81,7 @@ export function MultiSelect({
               role="button"
               tabIndex={0}
               onClick={clearAll}
-              onKeyDown={(e) => e.key === 'Enter' && clearAll(e as any)}
+              onKeyDown={(e) => e.key === "Enter" && clearAll(e as any)}
               className="text-muted-foreground hover:text-foreground rounded-sm p-0.5 cursor-pointer"
             >
               <X className="size-3" />
@@ -97,8 +89,8 @@ export function MultiSelect({
           )}
           <ChevronDown
             className={cn(
-              'size-4 text-muted-foreground transition-transform duration-200',
-              open && 'rotate-180'
+              "size-4 text-muted-foreground transition-transform duration-200",
+              open && "rotate-180",
             )}
           />
         </div>
@@ -110,7 +102,9 @@ export function MultiSelect({
             <div
               className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-muted/60 select-none"
               onClick={() =>
-                value.length === options.length ? onChange([]) : onChange([...options])
+                value.length === options.length
+                  ? onChange([])
+                  : onChange([...options])
               }
             >
               <Checkbox
@@ -118,11 +112,13 @@ export function MultiSelect({
                   value.length === options.length && options.length > 0
                     ? true
                     : value.length > 0
-                    ? 'indeterminate'
-                    : false
+                      ? "indeterminate"
+                      : false
                 }
                 onCheckedChange={() =>
-                  value.length === options.length ? onChange([]) : onChange([...options])
+                  value.length === options.length
+                    ? onChange([])
+                    : onChange([...options])
                 }
                 className="pointer-events-none"
               />

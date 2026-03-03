@@ -190,17 +190,17 @@ export function MouFilters({
           ))} */}
           {selectedPartnerType.map((partnerType) => (
             <Badge
-              key={`status-${partnerType}`}
+              key={`partnerType-${partnerType}`}
               variant="secondary"
               className="gap-1 pr-1"
             >
-              <span className="text-xs text-muted-foreground">Status:</span>
+              <span className="text-xs text-muted-foreground">Jenis Mitra:</span>
               {partnerType}
               <button
                 onClick={() =>
                   onPartnerTypeChange(
                     selectedPartnerType.filter(
-                      (partnerType) => partnerType !== partnerType,
+                      (pt) => pt !== partnerType,
                     ),
                   )
                 }
@@ -210,17 +210,17 @@ export function MouFilters({
               </button>
             </Badge>
           ))}
-          {selectedTahun.map((t) => (
+          {selectedTahun.map((thn) => (
             <Badge
-              key={`status-${t}`}
+              key={`tahun-${thn}`}
               variant="secondary"
               className="gap-1 pr-1"
             >
-              <span className="text-xs text-muted-foreground">Status:</span>
-              {t}
+              <span className="text-xs text-muted-foreground">Tahun:</span>
+              {thn}
               <button
                 onClick={() =>
-                  onTahunChange(selectedTahun.filter((t) => t !== t))
+                  onTahunChange(selectedTahun.filter((t) => t !== thn))
                 }
                 className="ml-1 hover:text-destructive"
               >

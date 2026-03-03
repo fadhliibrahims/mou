@@ -160,7 +160,7 @@ export function MouList() {
   const renderTahun = (tanggalMulai: string) => {
     if (!tanggalMulai) return "N/A";
     const date = new Date(tanggalMulai);
-    return date.getFullYear();
+    return date.getUTCFullYear().toString();
   };
 
   // helper to derive a human-friendly MoU status based on dates
