@@ -1,3 +1,4 @@
+import React from "react";
 import { Calendar, Building2, FileText, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';

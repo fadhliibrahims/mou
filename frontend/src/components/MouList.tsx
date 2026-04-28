@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MouFilters } from "./MouFilters";
 import { MouDetailModal } from "./MouDetailModal";
 import {
@@ -206,7 +206,8 @@ export function MouList() {
       mou.tanggal_berakhir,
     );
     const matchesStatus =
-      selectedStatus === "all" || computedStatus.toLowerCase() === selectedStatus.toLowerCase();
+      selectedStatus === "all" ||
+      computedStatus.toLowerCase() === selectedStatus.toLowerCase();
     const matchesPartnerType =
       selectedPartnerType.length === 0 ||
       selectedPartnerType.some((partnerType) =>
@@ -264,7 +265,7 @@ export function MouList() {
       No: idx + 1,
       Mitra: mou.mitra_nama || "",
       "Jenis Mitra": mou.mitra_lembaga || "",
-      "Wilayah": mou.mitra_asal || "",
+      Wilayah: mou.mitra_asal || "",
       "Bidang Kerjasama": mou.bidang_kerjasama?.slice(1, -1) || "",
       "Nomor MoU": mou.nomor_dokumen || "",
       "Tanggal Mulai": formatDate(mou.tanggal_mulai),
@@ -375,9 +376,7 @@ export function MouList() {
                     <TableHead className="min-w-[130px]">
                       Tanggal Berakhir
                     </TableHead>
-                    <TableHead className="min-w-[130px]">
-                      Wilayah
-                    </TableHead>
+                    <TableHead className="min-w-[130px]">Wilayah</TableHead>
                     {/* <TableHead className="w-[100px] text-center">
                       Aksi
                     </TableHead> */}
